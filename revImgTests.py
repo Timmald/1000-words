@@ -14,5 +14,10 @@ class Tests(TestCase):
         urls = ['https://en.wikipedia.org/wiki/Car', 'https://www.google.com/search?client=firefox-b-d&q=car+wheels&sa=X&ved=2ahUKEwjghZianuj7AhWfRjABHQRaDYEQ6BMoAHoECDMQAg', 'https://www.google.com/search?client=firefox-b-d&q=car+invented&sa=X&ved=2ahUKEwjghZianuj7AhWfRjABHQRaDYEQ6BMoAHoECDEQAg', 'https://www.google.com/search?client=firefox-b-d&q=car+inventor&sa=X&ved=2ahUKEwjghZianuj7AhWfRjABHQRaDYEQ6BMoAHoECDQQAg', 'https://www.google.com/search?client=firefox-b-d&q=Carl+Benz&stick=H4sIAAAAAAAAAONgVuLQz9U3MLGsSF_EyumcWJSj4JSaVwUAdpovChgAAAA&sa=X&ved=2ahUKEwjghZianuj7AhWfRjABHQRaDYEQmxMoAXoECDQQAw', 'https://www.google.com/search?client=firefox-b-d&q=car+application&sa=X&ved=2ahUKEwjghZianuj7AhWfRjABHQRaDYEQ6BMoAHoECDIQAg', 'https://www.google.com/search?client=firefox-b-d&q=Automotive+Segments&stick=H4sIAAAAAAAAAONgFmLXz9U3yDbJUoIxtESyk630k_Nzc_PzrFLyy_PKE4tSilcxCjqWluTn5pdklqU65yQWF6cWL2IVRogpBKem56bmlRTvYGUEADKoYlNXAAAA&sa=X&ved=2ahUKEwjghZianuj7AhWfRjABHQRaDYEQMSgAegQIKhAB', 'https://www.google.com/search?client=firefox-b-d&q=Car+Materials&stick=H4sIAAAAAAAAAONgFmLXz9U3yDbJUoIxtESyk630k_Nzc_PzrFLyy_PKE4tSilcxcvomlqQWZSbmFC9i5XVOLFKA83ewMgIA9bzMcEkAAAA&sa=X&ved=2ahUKEwjghZianuj7AhWfRjABHQRaDYEQMSgAegQIKxAB']
         corpus = get_corpus_from_urls(urls)
         print(corpus)
-        important_words = get_important_words(corpus, 50)
+        important_words = get_important_words(corpus, 150)
         print(important_words)
+
+    def test_important_words(self):
+        with open('testCorpus.txt', 'r') as reader:
+            corpus = reader.read()
+        print(get_important_words(corpus, 150))

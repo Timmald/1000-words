@@ -2,6 +2,7 @@ from serpapi import GoogleSearch
 from bs4 import BeautifulSoup
 from requests import get
 from statistics import mode
+import re
 
 def get_urls_from_img(imgPath:str)  -> list[str]:
     """
@@ -37,7 +38,30 @@ def get_urls_from_img(imgPath:str)  -> list[str]:
     return urlList
     #  TODO: In future, pass 'description' and 'title' and 'type' values to get_corpus to add more important words.
 
-
+def handle_url(url:str) -> str:
+    """
+    Selectively scrapes different parts of page for relevant text depending on if it's google or wiki
+    :param url: The url of the page to handle
+    :return: Relevant text from the webpage at url
+    """
+    isGoogle = 'google.com' in url
+    isWiki = 'wikipedia' in url
+    pageBytes = get(url).content
+    soup = BeautifulSoup(pageBytes, 'html.parser')
+    if isGoogle:
+        results = soup.find_all('div', class_='kvH3mc')
+        resultsText = ''
+        for result in results:
+            resultsText += result.text
+        return resultsText
+    elif isWiki:
+        resultsText = ''
+        paragraphs = soup.find_all('p')
+        for par in paragraphs:
+            resultsText += par.text
+        return resultsText
+    else:
+        return soup.text
 
 def get_corpus_from_urls(urlList:list[str]) -> str:
     """
@@ -48,11 +72,8 @@ def get_corpus_from_urls(urlList:list[str]) -> str:
     """
     corpus = ''
     for url in urlList:
-        pageBytes = get(url).content
-        soup = BeautifulSoup(pageBytes,'html.parser')
-        corpus += soup.text
+        corpus += handle_url(url)
     return corpus
-
 
 def get_important_words(corpus:str, numWords:int) -> list[str]:
     """
@@ -70,6 +91,13 @@ def get_important_words(corpus:str, numWords:int) -> list[str]:
             wordList.remove(word)
     # throw out all words with length 1
     wordList = [i for i in wordList if len(i) > 1]
+    # throw out any punctuation
+    for word in wordList:
+        if re.search('\W|\d', word) is not None:
+            while word in wordList:
+                wordList.remove(word)
+
+    # find numWords most common words
     for i in range(numWords):
         mostCommon = mode(wordList)
         commonList.append(mostCommon)
