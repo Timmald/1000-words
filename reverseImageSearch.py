@@ -46,7 +46,12 @@ def get_corpus_from_urls(urlList:list[str]) -> str:
     :param urlList: list of urls for relevant webpages
     :return: large string of all the text in webpages provided combined into a single string
     """
-    pass
+    corpus = ''
+    for url in urlList:
+        pageBytes = get(url).content
+        soup = BeautifulSoup(pageBytes,'html.parser')
+        corpus += soup.text
+    return corpus
 
 
 def get_important_words(corpus:str, numWords:int) -> list[str]:
@@ -55,3 +60,22 @@ def get_important_words(corpus:str, numWords:int) -> list[str]:
     :param numWords: number of important words to return
     :return: list of the numWords most important words
     """
+    wordList = corpus.lower().split()
+    commonList = []
+    # remove fry first 100
+    with open('fryFirst100.txt','r') as reader:
+        fry100 = reader.read().split(', ')
+    for word in fry100:
+        while(word in wordList):
+            wordList.remove(word)
+    # throw out all words with length 1
+    wordList = [i for i in wordList if len(i) > 1]
+    for i in range(numWords):
+        mostCommon = mode(wordList)
+        commonList.append(mostCommon)
+        while(mostCommon in wordList):
+            wordList.remove(mostCommon)
+    return commonList
+
+
+
