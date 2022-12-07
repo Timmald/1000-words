@@ -10,7 +10,15 @@ def get_urls_from_img(imgPath:str)  -> list[str]:
     :param imgPath: Path to the image put in
     :return: list of urls to the webpages
     """
-    pass
+    params = {
+        "engine": "google_reverse_image",
+        "image_url": imgPath,
+        "api_key": "secret_api_key"
+    }
+    search = GoogleSearch(params)
+    results = search.get_dict()
+    # TODO: serpapi.com/manage-api-key to resolve api key issues
+    return results["urls"]
 
 
 def get_corpus_from_urls(urlList:list[str]) -> str:
