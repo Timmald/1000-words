@@ -1,3 +1,8 @@
+from serpapi import GoogleSearch
+from bs4 import BeautifulSoup
+from requests import get
+from statistics import mode
+
 def get_urls_from_img(imgPath:str)  -> list[str]:
     """
     get the list of links to relevant webpages based on the image uploaded
