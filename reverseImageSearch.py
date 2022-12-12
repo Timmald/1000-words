@@ -62,7 +62,7 @@ def get_important_words(corpus:str, numWords:int) -> list[str]:
     wordList = [i for i in wordList if len(i) > 1]
     # throw out any punctuation
     for word in wordList:
-        if re.search('\W|\d', word) is not None:
+        if re.search('\W|\d', word) is not None or word[:len(word) - 1] in wordList:
             while word in wordList:
                 wordList.remove(word)
 
