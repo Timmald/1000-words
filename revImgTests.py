@@ -1,9 +1,23 @@
 from unittest import TestCase
 from reverseImageSearch import *
+import asyncio as aio
 
 class Tests(TestCase):
+    def test_from_url(self):
+        url = 'https://www.ford.com/is/image/content/dam/vdm_ford/live/en_us/ford/nameplate/mustang/2022/collections/dm/21_FRD_MST_wdmp_200510_02298.tif?croppathe=1_21x9&wid=1440'
+        desc = get_elements_from_img(url)
+        corpus = get_corpus_from_desc(desc)
+        important_words = get_important_words(corpus, 150)
+        print(important_words)
     def test_all(self):
-        desc = get_elements_from_img('https://cdn.discordapp.com/attachments/888457393179070494/1045107756652302366/IMG_2988.jpg')
+        path = 'IMG_5669.jpeg'
+        path = compress_image(path)
+        print('compressed')
+        aio.run(upload_image(path))
+        with open('url.txt','r') as reader:
+            url = reader.read()
+        print(f'uploaded at {url}')
+        desc = get_elements_from_img(url)
         print(desc)
         corpus = get_corpus_from_desc(desc)
         print(corpus)
