@@ -40,6 +40,17 @@ def get_corpus_from_desc(imgDesc:str) -> str:
         paragraphs = wiki.find_all('p')
         for p in paragraphs:
             corpus += p.text
+    if corpus ==  "":
+        url = f'https://en.wikipedia.org/wiki/Special:Search?search={elems[0]}&sourceid=Mozilla-search&ns0=1'
+        html=get(url).text
+        soup = BeautifulSoup(html, 'html.parser')
+        linkDivs = soup.find_all('div', class_='mw-search-result-heading')
+        wikiLinks = ['https://en.wikipedia.org' + i.find('a').attrs['href'] for i in linkDivs][:3]
+        for link in wikiLinks:
+            wiki = BeautifulSoup(get(str(link)).content, 'html.parser')
+            paragraphs = wiki.find_all('p')
+            for p in paragraphs:
+                corpus += p.text
     return corpus
 
 
