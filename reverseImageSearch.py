@@ -1,79 +1,48 @@
-from serpapi import GoogleSearch
 from bs4 import BeautifulSoup
 from requests import get
 from statistics import mode
+import replicate
 import re
+from urllib.parse import quote
+from os import environ
 
-def get_urls_from_img(imgPath:str)  -> list[str]:
+def get_elements_from_img(imgPath:str)  -> list[str]:
     """
-    get the list of links to relevant webpages based on the image uploaded
+    get the list of things in an image using img2prompt
 
     :param imgPath: Path to the image put in
-    :return: list of urls to the webpages
+    :return: words describing the contents and style of an image
     """
-    params = {
-        "engine": "google_reverse_image",
-        "image_url": imgPath,
-        "api_key": "29420d534203b31c11a7a15289d8e86c80dff57fde091c4600b6a4a31136d6e7"
-    }
-    search = GoogleSearch(params)
-    results = search.get_dict()
-    # How to make urlList:
-    urlList = []
-    # 1. look through the knowledge_graph dict keys
-    knowledge_graph = results['knowledge_graph']
-    for key in knowledge_graph.keys():
-        # 2. If any key has 'link' with no s, add it to urlList
-        if 'link'in key and not key[len(key) - 1] == 's':
-            urlList.append(knowledge_graph[key])
-        # 3. If any key has 'links' loop through its value and extract the 'link' from each to add to list
-        elif 'link' in key:
-            for linkDict in knowledge_graph[key]:
-                link = linkDict['link']
-                urlList.append(link)
-        # 4. If any key is has 'source' extract it's value's 'link' value and add to list
-        elif 'source' in key:
-            link = knowledge_graph[key]['link']
-            urlList.append(link)
-    return urlList
-    #  TODO: In future, pass 'description' and 'title' and 'type' values to get_corpus to add more important words.
+    environ["REPLICATE_API_TOKEN"] = '4a7bcad11f59b9945a213ed97d91f7e87b9882d3'
+    model = replicate.models.get("methexis-inc/img2prompt")
+    version = model.versions.get("50adaf2d3ad20a6f911a8a9e3ccf777b263b8596fbd2c8fc26e8888f8a0edbb5")
+    output = version.predict(image=imgPath)
+    return output
 
-def handle_url(url:str) -> str:
+def get_corpus_from_desc(imgDesc:str) -> str:
     """
-    Selectively scrapes different parts of page for relevant text depending on if it's google or wiki
-    :param url: The url of the page to handle
-    :return: Relevant text from the webpage at url
-    """
-    isGoogle = 'google.com' in url
-    isWiki = 'wikipedia' in url
-    pageBytes = get(url).content
-    soup = BeautifulSoup(pageBytes, 'html.parser')
-    if isGoogle:
-        results = soup.find_all('div', class_='kvH3mc')
-        resultsText = ''
-        for result in results:
-            resultsText += result.text
-        return resultsText
-    elif isWiki:
-        resultsText = ''
-        paragraphs = soup.find_all('p')
-        for par in paragraphs:
-            resultsText += par.text
-        return resultsText
-    else:
-        return soup.text
+    Use Wikipedia to get info on each part of the image description, and assemble it all into one massive corpus of text
 
-def get_corpus_from_urls(urlList:list[str]) -> str:
+    :param imgDesc: description of elements and style in image, comma-separated
+    :return: large string of all the text in wiki articles combined into one string
     """
-    scrape each site in the urlList to create one mass of text representing all of the words about this image online
+    elems = imgDesc.split(', ')
+    corpus = ""
+    #
 
-    :param urlList: list of urls for relevant webpages
-    :return: large string of all the text in webpages provided combined into a single string
-    """
-    corpus = ''
-    for url in urlList:
-        corpus += handle_url(url)
+
+    # for elem in elems:
+    url = f'https://www.google.com/search?client=firefox-b-1-d&q={elems[0]}'
+    html = get(url).text
+    wikiLinks = re.findall('https://en.wikipedia.org/wiki/\w+', html)
+    for link in wikiLinks:
+        wiki = BeautifulSoup(get(str(link)).content, 'html.parser')
+        paragraphs = wiki.find_all('p')
+        for p in paragraphs:
+            corpus += p.text
     return corpus
+
+
 
 def get_important_words(corpus:str, numWords:int) -> list[str]:
     """
