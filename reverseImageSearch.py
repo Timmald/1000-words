@@ -43,6 +43,8 @@ async def upload_image(imgPath: str):
 
     :param imgPath: The path of the image to upload
     """
+    # TODO: rewrite to work with image bytes
+    # TODO; rewrite to give a url on this website
     intents = discord.Intents.all()
     client = discord.Client(intents=intents)
     url = ''
