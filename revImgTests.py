@@ -30,8 +30,3 @@ class Tests(TestCase):
         print(corpus)
         important_words = get_important_words(corpus, 150)
         print(important_words)
-
-    def test_important_words(self):
-        with open('testCorpus.txt', 'r') as reader:
-            corpus = reader.read()
-        print(get_important_words(corpus, 150))
