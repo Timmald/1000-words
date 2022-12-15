@@ -1,7 +1,7 @@
+from datetime import datetime
 from flask import *
 import sqlite3
 from reverseImageSearch import *
-from requests import get
 from thesaurus import *
 app = Flask(__name__)
 

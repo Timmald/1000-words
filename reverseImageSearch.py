@@ -1,19 +1,9 @@
-import datetime
-import time
-
 from bs4 import BeautifulSoup
 from requests import get
 from statistics import mode
 import replicate
 import re
-import os.path
-from urllib.parse import quote
 from os import environ
-import discord
-from PIL.Image import Image
-import PIL.Image
-from werkzeug.datastructures import FileStorage
-import sqlite3
 
 def get_elements_from_img(imgUrl: str) -> list[str]:
     """
