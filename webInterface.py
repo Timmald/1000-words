@@ -19,7 +19,7 @@ def homePage():
         if request.files is not None:
             img = request.files[0]
             curTime = datetime.datetime.now().strftime('%c')
-            imgUrl = '/' + str(img.filename)
+            imgUrl = '/file/' + str(img.filename)
             imgBytes = bytes(img.stream.read())
             img.close()
         else:
@@ -38,6 +38,11 @@ def homePage():
     return render_template('index.html', thouWords=[])
 
 
-# TODO: Write a new route for accessing images by url in the database
+@app.route('/file/<string:fileName>')
+def getFile(fileName:str):
+    conn = get_db_connection()
+    fileBytes = conn.execute('SELECT Img FROM Queries WHERE ImgUrl = ?', (fileName)).fetchone()['Img']
+    return fileBytes
+
 if __name__ == '__main__':
     app.run()
