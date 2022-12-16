@@ -16,22 +16,22 @@ def get_db_connection():
 def homePage():
     if request.method == 'POST':
         imgUrl = None
-        if request.files is not None:
-            img = request.files[0]
-            curTime = datetime.datetime.now().strftime('%c')
+        if not request.files['img'].content_length == 0:
+            img = request.files['img']
+            curTime = datetime.now().strftime('%c')
             imgUrl = '/file/' + str(img.filename)
             imgBytes = bytes(img.stream.read())
             img.close()
         else:
-            curTime = datetime.datetime.now().strftime('%c')
+            curTime = datetime.now().strftime('%c')
             imgUrl = request.form['imgUrl']
             imgBytes = None
         desc = get_elements_from_img(imgUrl)
         corpus = get_corpus_from_desc(desc)
-        wikiWords = get_important_words(corpus)
+        wikiWords = get_important_words(corpus, 150)
         thouWords = get_thousand_words(wikiWords)
         conn = get_db_connection()
-        conn.execute('INSERT INTO Queries * VALUES (?,?,?,?,?,?,?)',(curTime, imgUrl, imgBytes, desc, corpus, wikiWords, thouWords))
+        conn.execute('INSERT INTO Queries VALUES (?,?,?,?,?,?,?)',(curTime, imgUrl, imgBytes, desc, corpus, json.dumps(wikiWords, indent=0), json.dumps(thouWords, indent=0)))
         conn.commit()
         conn.close()
         return render_template('index.html', thouWords=thouWords)
@@ -45,4 +45,4 @@ def getFile(fileName:str):
     return fileBytes
 
 if __name__ == '__main__':
-    app.run()
+    app.run(port=8000, debug=True)
