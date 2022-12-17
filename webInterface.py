@@ -1,5 +1,7 @@
 import base64
 from datetime import datetime
+
+import requests
 from flask import *
 import sqlite3
 from reverseImageSearch import *
@@ -28,22 +30,28 @@ def get_most_recent_entry(entries: list[sqlite3.Row]):
 def homePage():
     if request.method == 'POST':
         imgUrl = None
-        fileAttached = True
-        try:
-            request.files['img']
-        except KeyError:
-            fileAttached = False
+        fileAttached = not request.files['img'].filename == ''
+        conn = get_db_connection()
+        curTime = datetime.now().strftime('%c')
         if fileAttached:
             img = request.files['img']
-            curTime = datetime.now().strftime('%c')
-            imgUrl = request.base_url
-            imgBytes = bytes(img.stream.read())
+            imgUrl = request.base_url + img.filename
+            dupeImg = not len(conn.execute('SELECT * FROM Queries WHERE ImgUrl=?',(imgUrl,)).fetchall()) == 0
+            if dupeImg:
+                imgBytes = None
+            else:
+                imgBytes = bytes(img.stream.read())
+                if '.jpg' not in img.filename or '.png' not in img.filename:
+                    return render_template('Error.html', error='You hath failed to upload a valid image file. Try again:')
             img.close()
         else:
-            curTime = datetime.now().strftime('%c')
             imgUrl = request.form['imgUrl']
             imgBytes = None
-        conn = get_db_connection()
+            contentType = requests.get(imgUrl).headers['content-type']
+            if not 'image' in contentType:
+                return render_template('Error.html', error='your url does not point to an image')
+
+        # TODO: Add Errors for a bad Url and a bad file input
         conn.execute('INSERT INTO Queries (Time, ImgUrl, Img) VALUES (?, ?, ?)', (curTime, imgUrl, imgBytes))
         conn.commit()
         desc = get_elements_from_img(imgUrl) #TODO: Doesn't work for files until deployed. Deploy.
@@ -51,7 +59,7 @@ def homePage():
         wikiWords = get_important_words(corpus, 150)
         thouWords = get_thousand_words(wikiWords)
         entries = conn.execute('SELECT * FROM Queries').fetchall()
-        conn.execute('UPDATE Queries SET Description=? Corpus=? WikiWords=? 1000Words=? WHERE Time=?', (desc, corpus,wikiWords, thouWords, get_most_recent_entry(entries)))
+        conn.execute('UPDATE Queries SET Description=?, Corpus=?, WikiWords=?, thouWords=? WHERE Time=?', (desc, corpus, json.dumps(wikiWords, indent=0), json.dumps(thouWords, indent=0), get_most_recent_entry(entries)))
         conn.commit()
         conn.close()
         return render_template('index.html', thouWords=thouWords)
