@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>A Picture Is Worth 1000 Words</title>
+</head>
+<body>
+    <h1>Upload image or paste in image url:</h1>
+    <form method="post" enctype="multipart/form-data">
+        <input type="file" name="img">
+        <input type="text" name="imgUrl">
+        <button type="submit">Submit</button>
+    </form>
+    {% for word in thouWords %}
+        {{word}}
+        <br>
+    {% endfor %}
+</body>
+</html>
